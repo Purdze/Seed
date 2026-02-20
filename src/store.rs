@@ -10,6 +10,8 @@ pub struct Group {
     pub permissions: Vec<String>,
     #[serde(default)]
     pub inheritance: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prefix: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -22,6 +24,8 @@ pub struct PlayerData {
     pub extra_permissions: Vec<String>,
     #[serde(default)]
     pub denied_permissions: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prefix: Option<String>,
 }
 
 fn default_group() -> String {
@@ -61,6 +65,7 @@ impl PermissionStore {
                         "minecraft:command.list".to_string(),
                     ],
                     inheritance: Vec::new(),
+                    prefix: None,
                 },
             )])
         };
@@ -163,12 +168,49 @@ impl PermissionStore {
         }
     }
 
+    /// Resolve the effective prefix for a player.
+    /// Player-level prefix overrides group prefix.
+    pub fn resolve_prefix(&self, uuid: &Uuid) -> Option<String> {
+        if let Some(pd) = self.players.get(uuid) {
+            if pd.prefix.is_some() {
+                return pd.prefix.clone();
+            }
+            return self.resolve_group_prefix(&pd.group);
+        }
+        self.resolve_group_prefix("default")
+    }
+
+    /// Resolve the prefix for a group by walking the inheritance chain.
+    /// First match wins.
+    pub fn resolve_group_prefix(&self, group_name: &str) -> Option<String> {
+        let mut visited = HashSet::new();
+        self.find_group_prefix(group_name, &mut visited)
+    }
+
+    fn find_group_prefix(&self, group_name: &str, visited: &mut HashSet<String>) -> Option<String> {
+        if !visited.insert(group_name.to_string()) {
+            return None;
+        }
+        if let Some(group) = self.groups.get(group_name) {
+            if group.prefix.is_some() {
+                return group.prefix.clone();
+            }
+            for parent in &group.inheritance {
+                if let Some(prefix) = self.find_group_prefix(parent, visited) {
+                    return Some(prefix);
+                }
+            }
+        }
+        None
+    }
+
     pub fn get_or_create_player(&mut self, uuid: Uuid, username: &str) -> &mut PlayerData {
         let pd = self.players.entry(uuid).or_insert_with(|| PlayerData {
             username: username.to_string(),
             group: "default".to_string(),
             extra_permissions: Vec::new(),
             denied_permissions: Vec::new(),
+            prefix: None,
         });
         pd.username = username.to_string();
         pd

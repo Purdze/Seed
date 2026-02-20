@@ -9,6 +9,7 @@ A permission plugin for [Pumpkin MC](https://github.com/Pumpkin-MC/Pumpkin). Pum
 - **Inheritance** - Groups can inherit permissions from other groups
 - **Per-player overrides** - Grant extra permissions or deny specific ones per player
 - **Wildcard support** - Use `*` to grant all permissions
+- **Chat prefixes** - Configurable per-group and per-player chat prefixes with color code support (`&` notation)
 
 ## Installation
 
@@ -40,10 +41,12 @@ inheritance = []
 [moderator]
 permissions = ["minecraft:command.kick", "minecraft:command.ban"]
 inheritance = ["default"]
+prefix = "&9[Mod]"
 
 [admin]
 permissions = ["seed:admin", "*"]
 inheritance = ["moderator"]
+prefix = "&c[Admin]"
 ```
 
 Giving a group `seed:admin` allows its members to use `/seed` commands in-game.
@@ -83,7 +86,9 @@ All commands are under `/seed` and require the `seed:admin` permission.
 | `/seed group delete <name>` | Delete a group (cannot delete `default`) |
 | `/seed group addperm <group> <permission>` | Add a permission to a group |
 | `/seed group removeperm <group> <permission>` | Remove a permission from a group |
-| `/seed group info <group>` | Show a group's permissions, inheritance, and effective permissions |
+| `/seed group info <group>` | Show a group's permissions, inheritance, prefix, and effective permissions |
+| `/seed group setprefix <group> <prefix>` | Set the chat prefix for a group (supports `&` color codes) |
+| `/seed group clearprefix <group>` | Remove the chat prefix from a group |
 | `/seed group list` | List all groups |
 
 ### Player Management
@@ -95,7 +100,9 @@ All commands are under `/seed` and require the `seed:admin` permission.
 | `/seed player removeperm <player> <permission>` | Remove an extra permission from a player |
 | `/seed player deny <player> <permission>` | Deny a specific permission for a player (overrides group) |
 | `/seed player undeny <player> <permission>` | Remove a denied permission from a player |
-| `/seed player info <player>` | Show a player's group, extras, denials, and effective permissions |
+| `/seed player setprefix <player> <prefix>` | Set a per-player chat prefix (overrides group prefix) |
+| `/seed player clearprefix <player>` | Remove a player's prefix override |
+| `/seed player info <player>` | Show a player's group, prefix, extras, denials, and effective permissions |
 
 ### Utility
 
@@ -130,3 +137,13 @@ This creates an `admin` group with full permissions (including the ability to us
 ```
 
 This creates a `vip` group with fly and gamemode permissions, assigns Alex to it, then denies gamemode specifically for Alex. Alex can fly but cannot change gamemode.
+
+### Setting up chat prefixes
+
+```
+/seed group setprefix admin &c[Admin]
+/seed group setprefix vip &a[VIP]
+/seed player setprefix Steve &6[Owner]
+```
+
+Groups with a prefix will have it shown before the player's name in chat (e.g. `[Admin] <Steve> Hello!`). Player-level prefixes override group prefixes. Color codes use `&` notation (converted to `§` at display time). If no prefix is set, Pumpkin's default chat format is used.

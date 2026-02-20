@@ -15,6 +15,7 @@ use crate::store::PermissionStore;
 
 const ARG_GROUP_NAME: &str = "name";
 const ARG_PERMISSION: &str = "permission";
+const ARG_PREFIX: &str = "prefix";
 const ARG_TARGET: &str = "target";
 
 fn save_store(store: &PermissionStore) -> Result<(), CommandError> {
@@ -68,6 +69,7 @@ impl CommandExecutor for GroupCreateExecutor {
                 crate::store::Group {
                     permissions: Vec::new(),
                     inheritance: Vec::new(),
+                    prefix: None,
                 },
             );
             save_store(&store)?;
@@ -206,9 +208,73 @@ impl CommandExecutor for GroupInfoExecutor {
             let perms = format_list(&group.permissions);
             let inheritance = format_list(&group.inheritance);
             let effective = format_sorted_list(store.resolve_group_permissions(name));
+            let prefix = group.prefix.as_deref().unwrap_or("(none)");
             sender
                 .send_message(TextComponent::text(format!(
-                    "Group '{name}':\n  Permissions: {perms}\n  Inheritance: {inheritance}\n  Effective: {effective}"
+                    "Group '{name}':\n  Prefix: {prefix}\n  Permissions: {perms}\n  Inheritance: {inheritance}\n  Effective: {effective}"
+                )))
+                .await;
+            Ok(1)
+        })
+    }
+}
+
+struct GroupSetPrefixExecutor(Arc<RwLock<PermissionStore>>);
+
+impl CommandExecutor for GroupSetPrefixExecutor {
+    fn execute<'a>(
+        &'a self,
+        sender: &'a CommandSender,
+        _server: &'a Server,
+        args: &'a ConsumedArgs<'a>,
+    ) -> CommandResult<'a> {
+        let store = self.0.clone();
+        Box::pin(async move {
+            let name = SimpleArgConsumer::find_arg(args, ARG_GROUP_NAME)?;
+            let prefix = SimpleArgConsumer::find_arg(args, ARG_PREFIX)?;
+            let mut store = store.write().await;
+            let Some(group) = store.groups.get_mut(name) else {
+                sender
+                    .send_message(TextComponent::text(format!("Group '{name}' not found")))
+                    .await;
+                return Ok(0);
+            };
+            group.prefix = Some(prefix.to_string());
+            save_store(&store)?;
+            sender
+                .send_message(TextComponent::text(format!(
+                    "Set prefix for group '{name}' to '{prefix}'"
+                )))
+                .await;
+            Ok(1)
+        })
+    }
+}
+
+struct GroupClearPrefixExecutor(Arc<RwLock<PermissionStore>>);
+
+impl CommandExecutor for GroupClearPrefixExecutor {
+    fn execute<'a>(
+        &'a self,
+        sender: &'a CommandSender,
+        _server: &'a Server,
+        args: &'a ConsumedArgs<'a>,
+    ) -> CommandResult<'a> {
+        let store = self.0.clone();
+        Box::pin(async move {
+            let name = SimpleArgConsumer::find_arg(args, ARG_GROUP_NAME)?;
+            let mut store = store.write().await;
+            let Some(group) = store.groups.get_mut(name) else {
+                sender
+                    .send_message(TextComponent::text(format!("Group '{name}' not found")))
+                    .await;
+                return Ok(0);
+            };
+            group.prefix = None;
+            save_store(&store)?;
+            sender
+                .send_message(TextComponent::text(format!(
+                    "Cleared prefix for group '{name}'"
                 )))
                 .await;
             Ok(1)
@@ -408,6 +474,9 @@ impl CommandExecutor for PlayerInfoExecutor {
                 };
                 let extras = format_list(&pd.extra_permissions);
                 let denied = format_list(&pd.denied_permissions);
+                let prefix = store
+                    .resolve_prefix(&uuid)
+                    .unwrap_or_else(|| "(none)".to_string());
                 let mut effective: Vec<_> = store
                     .resolve_group_permissions(&pd.group)
                     .into_iter()
@@ -420,11 +489,68 @@ impl CommandExecutor for PlayerInfoExecutor {
                 let effective = format_sorted_list(effective);
                 sender
                     .send_message(TextComponent::text(format!(
-                        "Player '{name}' ({uuid}):\n  Group: {}\n  Extra: {extras}\n  Denied: {denied}\n  Effective: {effective}",
+                        "Player '{name}' ({uuid}):\n  Group: {}\n  Prefix: {prefix}\n  Extra: {extras}\n  Denied: {denied}\n  Effective: {effective}",
                         pd.group
                     )))
                     .await;
             }
+            Ok(1)
+        })
+    }
+}
+
+struct PlayerSetPrefixExecutor(Arc<RwLock<PermissionStore>>);
+
+impl CommandExecutor for PlayerSetPrefixExecutor {
+    fn execute<'a>(
+        &'a self,
+        sender: &'a CommandSender,
+        _server: &'a Server,
+        args: &'a ConsumedArgs<'a>,
+    ) -> CommandResult<'a> {
+        let store = self.0.clone();
+        Box::pin(async move {
+            let players = PlayersArgumentConsumer::find_arg(args, ARG_TARGET)?;
+            let prefix = SimpleArgConsumer::find_arg(args, ARG_PREFIX)?;
+            let mut store = store.write().await;
+            for player in players {
+                let name = &player.gameprofile.name;
+                let pd = store.get_or_create_player(player.gameprofile.id, name);
+                pd.prefix = Some(prefix.to_string());
+                sender
+                    .send_message(TextComponent::text(format!(
+                        "Set prefix for {name} to '{prefix}'"
+                    )))
+                    .await;
+            }
+            save_store(&store)?;
+            Ok(1)
+        })
+    }
+}
+
+struct PlayerClearPrefixExecutor(Arc<RwLock<PermissionStore>>);
+
+impl CommandExecutor for PlayerClearPrefixExecutor {
+    fn execute<'a>(
+        &'a self,
+        sender: &'a CommandSender,
+        _server: &'a Server,
+        args: &'a ConsumedArgs<'a>,
+    ) -> CommandResult<'a> {
+        let store = self.0.clone();
+        Box::pin(async move {
+            let players = PlayersArgumentConsumer::find_arg(args, ARG_TARGET)?;
+            let mut store = store.write().await;
+            for player in players {
+                let name = &player.gameprofile.name;
+                let pd = store.get_or_create_player(player.gameprofile.id, name);
+                pd.prefix = None;
+                sender
+                    .send_message(TextComponent::text(format!("Cleared prefix for {name}")))
+                    .await;
+            }
+            save_store(&store)?;
             Ok(1)
         })
     }
@@ -530,6 +656,20 @@ pub fn build_command_tree(store: Arc<RwLock<PermissionStore>>) -> CommandTree {
                             .execute(GroupInfoExecutor(store.clone())),
                     ),
                 )
+                .then(
+                    literal("setprefix").then(
+                        argument(ARG_GROUP_NAME, SimpleArgConsumer).then(
+                            argument(ARG_PREFIX, SimpleArgConsumer)
+                                .execute(GroupSetPrefixExecutor(store.clone())),
+                        ),
+                    ),
+                )
+                .then(
+                    literal("clearprefix").then(
+                        argument(ARG_GROUP_NAME, SimpleArgConsumer)
+                            .execute(GroupClearPrefixExecutor(store.clone())),
+                    ),
+                )
                 .then(literal("list").execute(GroupListExecutor(store.clone()))),
         )
         .then(
@@ -579,6 +719,20 @@ pub fn build_command_tree(store: Arc<RwLock<PermissionStore>>) -> CommandTree {
                     literal("info").then(
                         argument(ARG_TARGET, PlayersArgumentConsumer)
                             .execute(PlayerInfoExecutor(store.clone())),
+                    ),
+                )
+                .then(
+                    literal("setprefix").then(
+                        argument(ARG_TARGET, PlayersArgumentConsumer).then(
+                            argument(ARG_PREFIX, SimpleArgConsumer)
+                                .execute(PlayerSetPrefixExecutor(store.clone())),
+                        ),
+                    ),
+                )
+                .then(
+                    literal("clearprefix").then(
+                        argument(ARG_TARGET, PlayersArgumentConsumer)
+                            .execute(PlayerClearPrefixExecutor(store.clone())),
                     ),
                 ),
         )

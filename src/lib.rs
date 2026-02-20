@@ -33,6 +33,17 @@ fn on_load(&mut self, server: Arc<Context>) -> Result<(), String> {
         )
         .await;
 
+    let chat_handler = Arc::new(handler::SeedChatHandler {
+        store: store.clone(),
+    });
+    server
+        .register_event::<pumpkin::plugin::api::events::player::player_chat::PlayerChatEvent, _>(
+            chat_handler,
+            pumpkin::plugin::EventPriority::Normal,
+            true,
+        )
+        .await;
+
     let tree = commands::build_command_tree(store);
     server.register_command(tree, "seed:admin").await;
 
