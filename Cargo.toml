@@ -10,10 +10,10 @@ rust-version = "1.89"
 crate-type = ["cdylib"]
 
 [dependencies]
-pumpkin = { path = "C:/Users/poodz/Desktop/rustmc/pumpkin/Pumpkin/pumpkin" }
-pumpkin-api-macros = { path = "C:/Users/poodz/Desktop/rustmc/pumpkin/Pumpkin/pumpkin-api-macros" }
-pumpkin-data = { path = "C:/Users/poodz/Desktop/rustmc/pumpkin/Pumpkin/pumpkin-data" }
-pumpkin-util = { path = "C:/Users/poodz/Desktop/rustmc/pumpkin/Pumpkin/pumpkin-util" }
+pumpkin = { git = "https://github.com/Pumpkin-MC/Pumpkin.git" }
+pumpkin-api-macros = { git = "https://github.com/Pumpkin-MC/Pumpkin.git" }
+pumpkin-data = { git = "https://github.com/Pumpkin-MC/Pumpkin.git" }
+pumpkin-util = { git = "https://github.com/Pumpkin-MC/Pumpkin.git" }
 tokio = { version = "1.49", features = ["macros", "rt-multi-thread", "sync"] }
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.9"

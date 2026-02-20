@@ -1496,6 +1496,7 @@ dependencies = [
 [[package]]
 name = "pumpkin"
 version = "0.1.0-dev+1.21.11"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git#33cb4e5f2365acbd1ddd2459a7f62a5810e9a81d"
 dependencies = [
  "arc-swap",
  "base64",
@@ -1536,6 +1537,7 @@ dependencies = [
 [[package]]
 name = "pumpkin-api-macros"
 version = "0.1.0-dev+1.21.11"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git#33cb4e5f2365acbd1ddd2459a7f62a5810e9a81d"
 dependencies = [
  "proc-macro-error2",
  "proc-macro2",
@@ -1546,6 +1548,7 @@ dependencies = [
 [[package]]
 name = "pumpkin-config"
 version = "0.1.0-dev+1.21.11"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git#33cb4e5f2365acbd1ddd2459a7f62a5810e9a81d"
 dependencies = [
  "pumpkin-util",
  "serde",
@@ -1557,6 +1560,7 @@ dependencies = [
 [[package]]
 name = "pumpkin-data"
 version = "0.1.0-dev+1.21.11"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git#33cb4e5f2365acbd1ddd2459a7f62a5810e9a81d"
 dependencies = [
  "crc-fast",
  "phf",
@@ -1568,6 +1572,7 @@ dependencies = [
 [[package]]
 name = "pumpkin-inventory"
 version = "0.1.0-dev+1.21.11"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git#33cb4e5f2365acbd1ddd2459a7f62a5810e9a81d"
 dependencies = [
  "crossbeam-utils",
  "pumpkin-data",
@@ -1582,6 +1587,7 @@ dependencies = [
 [[package]]
 name = "pumpkin-macros"
 version = "0.1.0-dev+1.21.11"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git#33cb4e5f2365acbd1ddd2459a7f62a5810e9a81d"
 dependencies = [
  "proc-macro-error2",
  "pumpkin-data",
@@ -1592,6 +1598,7 @@ dependencies = [
 [[package]]
 name = "pumpkin-nbt"
 version = "0.1.0-dev+1.21.11"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git#33cb4e5f2365acbd1ddd2459a7f62a5810e9a81d"
 dependencies = [
  "bytes",
  "cesu8",
@@ -1603,6 +1610,7 @@ dependencies = [
 [[package]]
 name = "pumpkin-protocol"
 version = "0.1.0-dev+1.21.11"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git#33cb4e5f2365acbd1ddd2459a7f62a5810e9a81d"
 dependencies = [
  "aes",
  "async-compression",
@@ -1625,6 +1633,7 @@ dependencies = [
 [[package]]
 name = "pumpkin-util"
 version = "0.1.0-dev+1.21.11"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git#33cb4e5f2365acbd1ddd2459a7f62a5810e9a81d"
 dependencies = [
  "base64",
  "bytes",
@@ -1649,6 +1658,7 @@ dependencies = [
 [[package]]
 name = "pumpkin-world"
 version = "0.1.0-dev+1.21.11"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git#33cb4e5f2365acbd1ddd2459a7f62a5810e9a81d"
 dependencies = [
  "bitflags",
  "bytes",
