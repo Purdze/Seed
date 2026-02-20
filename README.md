@@ -16,13 +16,21 @@ A permission plugin for [Pumpkin MC](https://github.com/Pumpkin-MC/Pumpkin). Pum
 2. Copy `target/release/seed.dll` (Windows) or `target/release/libseed.so` (Linux) into your Pumpkin server's `plugins/` directory
 3. Start the server
 
-On first load, Seed creates a `plugins/seed/` folder with default configuration files.
+On first load, Seed creates a `plugins/seed/` folder with a `default` group. All `/seed` commands require the `seed:admin` permission, so only the server console can manage permissions initially. Use the console to create groups and assign players as needed.
 
 ## Configuration
 
 ### `plugins/seed/groups.toml`
 
-Defines permission groups. Each group has a list of permissions and can inherit from other groups.
+Defines permission groups. Each group has a list of permissions and can inherit from other groups. Only the `default` group is created on first load:
+
+```toml
+[default]
+permissions = ["minecraft:command.help", "minecraft:command.list"]
+inheritance = []
+```
+
+You can add more groups via commands or by editing the file directly. For example, a typical setup:
 
 ```toml
 [default]
@@ -34,9 +42,11 @@ permissions = ["minecraft:command.kick", "minecraft:command.ban"]
 inheritance = ["default"]
 
 [admin]
-permissions = ["*"]
+permissions = ["seed:admin", "*"]
 inheritance = ["moderator"]
 ```
+
+Giving a group `seed:admin` allows its members to use `/seed` commands in-game.
 
 ### `plugins/seed/players.toml`
 
@@ -96,14 +106,27 @@ All commands are under `/seed` and require the `seed:admin` permission.
 
 ## Examples
 
+### Initial setup (from console)
+
+```
+/seed group create admin
+/seed group addperm admin seed:admin
+/seed group addperm admin *
+/seed player setgroup Steve admin
+```
+
+This creates an `admin` group with full permissions (including the ability to use `/seed` commands), then makes Steve an admin. Steve can now manage permissions in-game.
+
+### Creating a custom group
+
 ```
 /seed group create vip
 /seed group addperm vip minecraft:command.fly
 /seed group addperm vip minecraft:command.gamemode
 
-/seed player setgroup Steve vip
-/seed player deny Steve minecraft:command.gamemode
-/seed player info Steve
+/seed player setgroup Alex vip
+/seed player deny Alex minecraft:command.gamemode
+/seed player info Alex
 ```
 
-This creates a `vip` group with fly and gamemode permissions, assigns Steve to it, then denies gamemode specifically for Steve. Steve can fly but cannot change gamemode.
+This creates a `vip` group with fly and gamemode permissions, assigns Alex to it, then denies gamemode specifically for Alex. Alex can fly but cannot change gamemode.
