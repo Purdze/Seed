@@ -1,0 +1,20 @@
+[package]
+name = "seed"
+version = "1.0.0"
+authors = ["poodz"]
+description = "A permission plugin for Pumpkin MC"
+edition = "2024"
+rust-version = "1.89"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+pumpkin = { path = "C:/Users/poodz/Desktop/rustmc/pumpkin/Pumpkin/pumpkin" }
+pumpkin-api-macros = { path = "C:/Users/poodz/Desktop/rustmc/pumpkin/Pumpkin/pumpkin-api-macros" }
+pumpkin-data = { path = "C:/Users/poodz/Desktop/rustmc/pumpkin/Pumpkin/pumpkin-data" }
+pumpkin-util = { path = "C:/Users/poodz/Desktop/rustmc/pumpkin/Pumpkin/pumpkin-util" }
+tokio = { version = "1.49", features = ["macros", "rt-multi-thread", "sync"] }
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.9"
+uuid = { version = "1.20", features = ["serde"] }
